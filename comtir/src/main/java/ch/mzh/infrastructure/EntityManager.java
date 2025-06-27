@@ -5,7 +5,6 @@ import com.badlogic.gdx.utils.Array;
 import ch.mzh.model.Entity;
 import ch.mzh.model.EntityType;
 
-// Entity Manager
 public class EntityManager {
     private Array<Entity> entities;
     

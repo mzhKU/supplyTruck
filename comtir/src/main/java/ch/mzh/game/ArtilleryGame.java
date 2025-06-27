@@ -16,7 +16,7 @@ import ch.mzh.model.Cannon;
 import ch.mzh.model.Entity;
 import ch.mzh.model.EntityType;
 
-public class ArtilleryGame extends ApplicationAdapter {
+public class ArtilleryGame extends ApplicationAdapter implements Observer {
     private OrthographicCamera camera;
     private GameGrid gameGrid;
     private EntityManager entityManager;
@@ -28,10 +28,7 @@ public class ArtilleryGame extends ApplicationAdapter {
     private static final float ZOOM_SPEED = 1.0f;
     private static final float MIN_ZOOM = 0.1f;
     private static final float MAX_ZOOM = 2.0f;
-    
-    // Selection system
-    private Entity selectedEntity;
-    
+        
     @Override
     public void create() {
         // Initialize camera
@@ -48,8 +45,8 @@ public class ArtilleryGame extends ApplicationAdapter {
         inputHandler = new InputHandler(camera, gameGrid, entityManager);
         Gdx.input.setInputProcessor(inputHandler);
         
-        // Selection system
-        selectedEntity = null;
+        inputHandler.addObserver(this);
+        inputHandler.addObserver(gameRenderer);
         
         // Create initial entities for testing
         setupInitialEntities();
@@ -79,22 +76,8 @@ public class ArtilleryGame extends ApplicationAdapter {
     public void render() {
         float deltaTime = Gdx.graphics.getDeltaTime();
         
-        // Handle keyboard input (camera movement)
         handleKeyboardInput(deltaTime);
                 
-        // Check for entity selection changes
-        Entity newSelection = inputHandler.getSelectedEntity();
-        if (newSelection != selectedEntity) {
-            selectedEntity = newSelection;
-            if (selectedEntity != null) {
-                System.out.println("Selected: " + selectedEntity.getType() + 
-                                 " at (" + selectedEntity.getGridX() + ", " + selectedEntity.getGridY() + ")");
-            } else {
-                System.out.println("Deselected entity");
-            }
-        }
-        
-        // Update camera
         camera.update();
         
         // Clear screen
@@ -102,12 +85,21 @@ public class ArtilleryGame extends ApplicationAdapter {
         Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
         
         // Render game
-        gameRenderer.render(entityManager.getEntities(), selectedEntity);
+        gameRenderer.render(entityManager.getEntities(), inputHandler.getSelectedEntity());
         
-        // Debug info
         renderDebugInfo();
     }
-    
+
+    @Override
+    public void onEntitySelected(Entity entity) {
+        printSelectionInfo(entity);
+    }
+
+    @Override
+    public void onEntityDeselected() {
+        printDeselectionInfo();
+    }
+
     private void handleKeyboardInput(float deltaTime) {
         // Camera movement
         Vector3 cameraMovement = new Vector3();
@@ -145,14 +137,20 @@ public class ArtilleryGame extends ApplicationAdapter {
             gameGrid.getWorldHeight() - halfHeight));
     }
     
-    private void renderDebugInfo() {
-        // This could be expanded with SpriteBatch for text rendering
-        // For now, we'll keep it simple
-    }
+    private void renderDebugInfo() {}
     
+    private void printSelectionInfo(Entity selectedEntity) {
+        System.out.println("Selected: " + selectedEntity.getType() + " at (" + selectedEntity.getGridX() + ", " + selectedEntity.getGridY() + ")");
+    }
+
+    private void printDeselectionInfo() {
+        System.out.println("Deselected entity");
+    }
+
     @Override
     public void dispose() {
-        gameRenderer.dispose();
+        inputHandler.removeObserver(this);
+        inputHandler.removeObserver(gameRenderer);
         inputHandler.dispose();
     }
 }

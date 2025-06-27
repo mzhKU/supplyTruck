@@ -1,5 +1,10 @@
 package ch.mzh.input;
 
+import ch.mzh.game.Observer;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -13,12 +18,15 @@ import ch.mzh.model.Entity;
 import ch.mzh.model.EntityType;
 import ch.mzh.model.TerrainType;
 
-public class InputHandler extends InputAdapter {
-    private OrthographicCamera camera;
+public class InputHandler extends InputAdapter implements Observable {
+
+	private OrthographicCamera camera;
     private GameGrid gameGrid;
     private EntityManager entityManager;
     private Entity selectedEntity;
     private Vector3 mouseWorldPos;
+
+    private final List<Observer> observers = new ArrayList<>();
     
     public InputHandler(OrthographicCamera camera, GameGrid gameGrid, EntityManager entityManager) {
         this.camera = camera;
@@ -33,7 +41,7 @@ public class InputHandler extends InputAdapter {
             handleEntitySelection(screenX, screenY);
             return true;
         } else if (button == Input.Buttons.RIGHT) { 
-            handleCannonMovementCommand(screenX, screenY);
+            handleMovementCommandOfSelectedEntity(screenX, screenY);
             return true;
         }
         return false;
@@ -45,8 +53,28 @@ public class InputHandler extends InputAdapter {
         updateMouseWorldPosition(screenX, screenY);
         return false;
     }
-    
-    private void handleCannonMovementCommand(int screenX, int screenY) {
+
+    private void setSelectedEntity(Entity entity) {
+        this.selectedEntity = entity;
+        updateEntityChangeListeners(this.selectedEntity);
+    }
+
+    @Override
+    public void addObserver(Observer observer) {
+        System.out.println("Adding observer: " + observer);
+        this.observers.add(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        observers.remove(observer);
+    }
+
+    public Entity getSelectedEntity() {
+        return selectedEntity;
+    }
+
+    private void handleMovementCommandOfSelectedEntity(int screenX, int screenY) {
         if (selectedEntity == null || selectedEntity.getType() != EntityType.CANNON) {
             return;
         }
@@ -123,27 +151,26 @@ public class InputHandler extends InputAdapter {
         
         // Look for entity at clicked position
         Entity clickedEntity = entityManager.getEntityAt(gridX, gridY);
-        
-        if (clickedEntity != null) {
+        updateEntityChangeListeners(clickedEntity);
+    }
+
+    private void updateEntityChangeListeners(Entity entity) {
+        if (entity != null) {
             // Select the clicked entity
-            selectedEntity = clickedEntity;
+            if (entity != this.selectedEntity) {
+                this.selectedEntity = entity;
+                observers.stream().forEach(o -> o.onEntitySelected(this.selectedEntity));
+            }
         } else {
             // Deselect if clicking on empty space
             selectedEntity = null;
+            observers.stream().forEach(Observer::onEntityDeselected);
         }
     }
-    
+
     private void updateMouseWorldPosition(int screenX, int screenY) {
         mouseWorldPos.set(screenX, screenY, 0);
         camera.unproject(mouseWorldPos);
-    }
-    
-    public Entity getSelectedEntity() {
-        return selectedEntity;
-    }
-    
-    public void setSelectedEntity(Entity entity) {
-        this.selectedEntity = entity;
     }
     
     public Vector2 getMouseGridPosition() {
