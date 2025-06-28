@@ -54,11 +54,6 @@ public class InputHandler extends InputAdapter implements Observable {
         return false;
     }
 
-    private void setSelectedEntity(Entity entity) {
-        this.selectedEntity = entity;
-        updateEntityChangeListeners(this.selectedEntity);
-    }
-
     @Override
     public void addObserver(Observer observer) {
         System.out.println("Adding observer: " + observer);
