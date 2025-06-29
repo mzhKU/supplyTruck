@@ -152,6 +152,10 @@ public class GameRenderer implements Observer {
         
         shapeRenderer.end();
     }
+
+    private void renderHighlightedEntity() {
+        // todo..
+    }
     
     private void renderSelectionIndicator(Entity selectedEntity) {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);

@@ -1,10 +1,12 @@
 package ch.mzh.input;
 
+import ch.mzh.components.MovementComponent;
 import ch.mzh.game.Observer;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.mzh.model.*;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -13,10 +15,9 @@ import com.badlogic.gdx.math.Vector3;
 
 import ch.mzh.infrastructure.EntityManager;
 import ch.mzh.infrastructure.GameGrid;
-import ch.mzh.model.Cannon;
-import ch.mzh.model.Entity;
-import ch.mzh.model.EntityType;
-import ch.mzh.model.TerrainType;
+
+import static ch.mzh.model.EntityType.CANNON;
+import static ch.mzh.model.EntityType.SUPPLY_TRUCK;
 
 public class InputHandler extends InputAdapter implements Observable {
 
@@ -50,7 +51,7 @@ public class InputHandler extends InputAdapter implements Observable {
     @Override
     public boolean mouseMoved(int screenX, int screenY) {
         // Update mouse world position for potential hover effects
-        updateMouseWorldPosition(screenX, screenY);
+        convertScreenToWorldCoordinates(screenX, screenY);
         return false;
     }
 
@@ -70,12 +71,12 @@ public class InputHandler extends InputAdapter implements Observable {
     }
 
     private void handleMovementCommandOfSelectedEntity(int screenX, int screenY) {
-        if (selectedEntity == null || selectedEntity.getType() != EntityType.CANNON) {
+        if (!selectedEntity.hasComponent(MovementComponent.class)) {
             return;
         }
-        
+
         // Convert screen coordinates to world coordinates
-        updateMouseWorldPosition(screenX, screenY);
+        convertScreenToWorldCoordinates(screenX, screenY);
         
         // Convert world coordinates to grid coordinates
         Vector2 gridPos = gameGrid.worldToGrid(mouseWorldPos.x, mouseWorldPos.y);
@@ -103,19 +104,30 @@ public class InputHandler extends InputAdapter implements Observable {
         
         // Calculate movement cost and check if we have enough fuel
         int movementCost = calculateMovementCost(selectedEntity, targetX, targetY);
-        selectedEntity.getType();
-        Cannon cannon = (Cannon) selectedEntity;
-        
-        if (cannon.getFuel() < movementCost) {
-            System.out.println("Not enough fuel! Need " + movementCost + " but only have " + cannon.getFuel());
-            return;
+
+
+        EntityType selectedEntityTyp = selectedEntity.getType();
+        if (selectedEntityTyp == SUPPLY_TRUCK) {
+            SupplyTruck truck = ((SupplyTruck) selectedEntity);
+            if (truck.getFuel() < movementCost) {
+                System.out.println("Not enough fuel! Need " + movementCost + " but only have " + truck.getFuel());
+                return;
+            }
+            truck.consumeFuel(movementCost);
+            System.out.println("Moved cannon to (" + targetX + ", " + targetY + ") - Fuel remaining: " + truck.getFuel());
         }
-        
-        // Execute the movement
-        cannon.consumeFuel(movementCost);
+
+        if (selectedEntityTyp == CANNON) {
+            Cannon cannon = (Cannon) selectedEntity;
+            if (cannon.getFuel() < movementCost) {
+                System.out.println("Not enough fuel! Need " + movementCost + " but only have " + cannon.getFuel());
+                return;
+            }
+            cannon.consumeFuel(movementCost);
+            System.out.println("Moved cannon to (" + targetX + ", " + targetY + ") - Fuel remaining: " + cannon.getFuel());
+        }
+
         selectedEntity.setGridPosition(targetX, targetY);
-        
-        System.out.println("Moved cannon to (" + targetX + ", " + targetY + ") - Fuel remaining: " + cannon.getFuel());
     }
     
     private int calculateMovementCost(Entity entity, int targetX, int targetY) {
@@ -129,9 +141,10 @@ public class InputHandler extends InputAdapter implements Observable {
         return (int) Math.ceil(distance * 1.5);
     }
 
+
     private void handleEntitySelection(int screenX, int screenY) {
         // Convert screen coordinates to world coordinates
-        updateMouseWorldPosition(screenX, screenY);
+        convertScreenToWorldCoordinates(screenX, screenY);
         
         // Convert world coordinates to grid coordinates
         Vector2 gridPos = gameGrid.worldToGrid(mouseWorldPos.x, mouseWorldPos.y);
@@ -163,7 +176,7 @@ public class InputHandler extends InputAdapter implements Observable {
         }
     }
 
-    private void updateMouseWorldPosition(int screenX, int screenY) {
+    private void convertScreenToWorldCoordinates(int screenX, int screenY) {
         mouseWorldPos.set(screenX, screenY, 0);
         camera.unproject(mouseWorldPos);
     }

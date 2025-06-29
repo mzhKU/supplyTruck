@@ -1,6 +1,10 @@
 package ch.mzh.game;
 
 // Main Game Class
+import ch.mzh.components.Component;
+import ch.mzh.components.MovementComponent;
+import ch.mzh.components.MovementType;
+import ch.mzh.model.SupplyTruck;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -15,6 +19,10 @@ import ch.mzh.input.InputHandler;
 import ch.mzh.model.Cannon;
 import ch.mzh.model.Entity;
 import ch.mzh.model.EntityType;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.WeakHashMap;
 
 public class ArtilleryGame extends ApplicationAdapter implements Observer {
     private OrthographicCamera camera;
@@ -58,17 +66,23 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         entityManager.addEntity(homeBase);
         
         // Create cannon near base
+        Component cannonMovement = new MovementComponent(MovementType.DRIVE);
         Entity cannon = new Cannon(EntityType.CANNON, 15, 15, 200);
+        cannon.addComponent(cannonMovement);
         entityManager.addEntity(cannon);
         
         // Create some troops
-        for (int i = 0; i < 5; i++) {
+        Component troopMovement = new MovementComponent(MovementType.WALK);
+                for (int i = 0; i < 5; i++) {
             Entity troop = new Entity(EntityType.TROOP, 12 + i, 12);
+            troop.addComponent(troopMovement);
             entityManager.addEntity(troop);
         }
         
         // Create a supply truck
-        Entity supplyTruck = new Entity(EntityType.SUPPLY_TRUCK, 8, 8);
+        Component supplyTruckMovement = new MovementComponent(MovementType.DRIVE);
+        Entity supplyTruck = new SupplyTruck(EntityType.SUPPLY_TRUCK, 8, 8, 10, 50);
+        supplyTruck.addComponent(supplyTruckMovement);
         entityManager.addEntity(supplyTruck);
     }
     
@@ -131,10 +145,8 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         float halfWidth = camera.viewportWidth * camera.zoom / 2;
         float halfHeight = camera.viewportHeight * camera.zoom / 2;
         
-        camera.position.x = Math.max(halfWidth, Math.min(camera.position.x, 
-            gameGrid.getWorldWidth() - halfWidth));
-        camera.position.y = Math.max(halfHeight, Math.min(camera.position.y, 
-            gameGrid.getWorldHeight() - halfHeight));
+        camera.position.x = Math.max(halfWidth, Math.min(camera.position.x, gameGrid.getWorldWidth() - halfWidth));
+        camera.position.y = Math.max(halfHeight, Math.min(camera.position.y, gameGrid.getWorldHeight() - halfHeight));
     }
     
     private void renderDebugInfo() {}

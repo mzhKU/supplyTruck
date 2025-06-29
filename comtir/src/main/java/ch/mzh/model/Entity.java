@@ -1,6 +1,12 @@
 package ch.mzh.model;
 
+import ch.mzh.components.Component;
+import ch.mzh.components.MovementComponent;
 import com.badlogic.gdx.math.Vector2;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Entity {
     private EntityType type;
@@ -9,10 +15,13 @@ public class Entity {
     private boolean active;
     private boolean selectable;
 
+    protected Map<Class<? extends Component>, Component> components;
+
     public Entity() {}
     
     public Entity(EntityType type, int gridX, int gridY) {
         this.type = type;
+        this.components = new HashMap<>();
         this.gridX = gridX;
         this.gridY = gridY;
         this.worldPosition = new Vector2();
@@ -20,13 +29,31 @@ public class Entity {
         this.selectable = true; // Most entities are selectable by default
         updateWorldPosition();
     }
+
     
     public void setGridPosition(int x, int y) {
         this.gridX = x;
         this.gridY = y;
         updateWorldPosition();
     }
-    
+
+    public <T extends Component> void addComponent(T component) {
+        components.put(component.getClass(), component);
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Component> T getComponent(Class<T> componentType) {
+        return (T) components.get(componentType);
+    }
+
+    public <T extends Component> boolean hasComponent(Class<T> componentType) {
+        return components.containsKey(componentType);
+    }
+
+    public <T extends Component> void removeComponent(Class<T> componentType) {
+        components.remove(componentType);
+    }
+
     private void updateWorldPosition() {
         // This will be updated when we have access to the grid
         // For now, assume 32px tiles
@@ -40,8 +67,9 @@ public class Entity {
     public Vector2 getWorldPosition() { return worldPosition; }
     public boolean isActive() { return active; }
     public boolean isSelectable() { return selectable; }
-    
+
     // Setters
     public void setActive(boolean active) { this.active = active; }
     public void setSelectable(boolean selectable) { this.selectable = selectable; }
+
 }
