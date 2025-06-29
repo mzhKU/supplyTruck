@@ -1,9 +1,6 @@
 package ch.mzh.game;
 
-// Main Game Class
-import ch.mzh.components.Component;
-import ch.mzh.components.MovementComponent;
-import ch.mzh.components.MovementType;
+import ch.mzh.components.*;
 import ch.mzh.model.SupplyTruck;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -20,9 +17,7 @@ import ch.mzh.model.Cannon;
 import ch.mzh.model.Entity;
 import ch.mzh.model.EntityType;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.WeakHashMap;
+import static ch.mzh.model.EntityType.SUPPLY_TRUCK;
 
 public class ArtilleryGame extends ApplicationAdapter implements Observer {
     private OrthographicCamera camera;
@@ -62,27 +57,35 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     
     private void setupInitialEntities() {
         // Create home base at bottom-left area
-        Entity homeBase = new Entity(EntityType.BASE, 10, 10);
+        Entity homeBase = new Entity("Base 1", EntityType.BASE, 10, 10);
         entityManager.addEntity(homeBase);
         
         // Create cannon near base
-        Component cannonMovement = new MovementComponent(MovementType.DRIVE);
-        Entity cannon = new Cannon(EntityType.CANNON, 15, 15, 200);
+        Component cannonMovement = new MovementComponent();
+        Component cannonFuel = new FuelComponent(50, 2);
+
+        Entity cannon = new Cannon("Cannon 1", EntityType.CANNON, 15, 15);
         cannon.addComponent(cannonMovement);
+        cannon.addComponent(cannonFuel);
         entityManager.addEntity(cannon);
         
         // Create some troops
-        Component troopMovement = new MovementComponent(MovementType.WALK);
-                for (int i = 0; i < 5; i++) {
-            Entity troop = new Entity(EntityType.TROOP, 12 + i, 12);
+        Component troopMovement = new MovementComponent();
+        for (int i = 0; i < 5; i++) {
+            Entity troop = new Entity("Troop " + i, EntityType.TROOP, 12 + i, 12);
             troop.addComponent(troopMovement);
             entityManager.addEntity(troop);
         }
         
         // Create a supply truck
-        Component supplyTruckMovement = new MovementComponent(MovementType.DRIVE);
-        Entity supplyTruck = new SupplyTruck(EntityType.SUPPLY_TRUCK, 8, 8, 10, 50);
-        supplyTruck.addComponent(supplyTruckMovement);
+        Component truckMovement = new MovementComponent();
+        Component truckFuel = new FuelComponent(100, 1);
+        Component truckSupply = new SupplyComponent(200, 1);
+
+        Entity supplyTruck = new SupplyTruck("Supply Truck 1", SUPPLY_TRUCK, 8, 8);
+        supplyTruck.addComponent(truckMovement);
+        supplyTruck.addComponent(truckFuel);
+        supplyTruck.addComponent(truckSupply);
         entityManager.addEntity(supplyTruck);
     }
     

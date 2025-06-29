@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Entity {
+    private String name;
     private EntityType type;
     private int gridX, gridY;
     private Vector2 worldPosition;
@@ -19,7 +20,8 @@ public class Entity {
 
     public Entity() {}
     
-    public Entity(EntityType type, int gridX, int gridY) {
+    public Entity(String name, EntityType type, int gridX, int gridY) {
+        this.name = name;
         this.type = type;
         this.components = new HashMap<>();
         this.gridX = gridX;
@@ -30,7 +32,6 @@ public class Entity {
         updateWorldPosition();
     }
 
-    
     public void setGridPosition(int x, int y) {
         this.gridX = x;
         this.gridY = y;
@@ -55,12 +56,12 @@ public class Entity {
     }
 
     private void updateWorldPosition() {
-        // This will be updated when we have access to the grid
-        // For now, assume 32px tiles
+        // This will be updated when we have access to the grid, for now, assume 32px tiles
         worldPosition.set(gridX * 32, gridY * 32);
     }
     
     // Getters
+    public String getName() { return this.name; }
     public EntityType getType() { return type; }
     public int getGridX() { return gridX; }
     public int getGridY() { return gridY; }
@@ -69,7 +70,7 @@ public class Entity {
     public boolean isSelectable() { return selectable; }
 
     // Setters
+    public void setName(String name) { this.name = name; }
     public void setActive(boolean active) { this.active = active; }
     public void setSelectable(boolean selectable) { this.selectable = selectable; }
-
 }

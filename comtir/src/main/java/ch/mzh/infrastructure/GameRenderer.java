@@ -153,10 +153,6 @@ public class GameRenderer implements Observer {
         shapeRenderer.end();
     }
 
-    private void renderHighlightedEntity() {
-        // todo..
-    }
-    
     private void renderSelectionIndicator(Entity selectedEntity) {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f); // White selection border
