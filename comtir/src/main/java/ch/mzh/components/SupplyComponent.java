@@ -1,5 +1,6 @@
 package ch.mzh.components;
 
+import ch.mzh.infrastructure.Position2D;
 import ch.mzh.model.Entity;
 
 public class SupplyComponent implements Component {
@@ -31,7 +32,7 @@ public class SupplyComponent implements Component {
         }
 
         // Check range
-        return isInRange(target.getGridX(), target.getGridY(), supplier.getGridX(), supplier.getGridY());
+        return isInRange(target.getPosition(), supplier.getPosition());
     }
 
     public boolean refuelTarget(Entity supplier, Entity target) {
@@ -54,8 +55,8 @@ public class SupplyComponent implements Component {
 
     public int getFuelSupplyCapacity() { return fuelSupplyCapacity; }
     public int getRefuelRange() { return refuelRange; }
-    private boolean isInRange(int targetX, int targetY, int sourceX, int sourceY) {
-        int distance = Math.abs(targetX - sourceX) + Math.abs(targetY - sourceY);
+    private boolean isInRange(Position2D targetPosition, Position2D sourcePosition) {
+        int distance = Math.abs(targetPosition.getX() - sourcePosition.getX()) + Math.abs(targetPosition.getY() - sourcePosition.getY());
         return distance <= refuelRange;
     }
 }

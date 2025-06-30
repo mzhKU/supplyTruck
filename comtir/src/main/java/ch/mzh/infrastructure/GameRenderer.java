@@ -57,7 +57,7 @@ public class GameRenderer implements Observer {
         // Render terrain tiles
         for (int x = startX; x < endX; x++) {
             for (int y = startY; y < endY; y++) {
-                TerrainType terrain = gameGrid.getTerrainAt(x, y);
+                TerrainType terrain = gameGrid.getTerrainAt(new Position2D(x, y));
                 Vector2 worldPos = gameGrid.gridToWorld(x, y);
                 
                 // Set color based on terrain type
@@ -110,7 +110,7 @@ public class GameRenderer implements Observer {
         for (Entity entity : entities) {
             if (!entity.isActive()) continue;
             
-            Vector2 worldPos = gameGrid.gridToWorld(entity.getGridX(), entity.getGridY());
+            Vector2 worldPos = gameGrid.gridToWorld(entity.getPosition().getX(), entity.getPosition().getY());
             boolean isSelected = (entity == selectedEntity);
             
             // Set color and size based on entity type
@@ -157,7 +157,7 @@ public class GameRenderer implements Observer {
         shapeRenderer.begin(ShapeRenderer.ShapeType.Line);
         shapeRenderer.setColor(1.0f, 1.0f, 1.0f, 1.0f); // White selection border
         
-        Vector2 worldPos = gameGrid.gridToWorld(selectedEntity.getGridX(), selectedEntity.getGridY());
+        Vector2 worldPos = gameGrid.gridToWorld(selectedEntity.getPosition().getX(), selectedEntity.getPosition().getY());
         
         // Draw selection border around the tile
         shapeRenderer.rect(worldPos.x, worldPos.y, gameGrid.getTileSize(), gameGrid.getTileSize());

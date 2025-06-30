@@ -8,6 +8,7 @@ import ch.mzh.game.Observer;
 import java.util.ArrayList;
 import java.util.List;
 
+import ch.mzh.infrastructure.Position2D;
 import ch.mzh.model.*;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
@@ -82,31 +83,30 @@ public class InputHandler extends InputAdapter implements Observable {
         
         // Convert world coordinates to grid coordinates
         Vector2 gridPos = gameGrid.worldToGrid(mouseWorldPos.x, mouseWorldPos.y);
-        int targetX = (int) gridPos.x;
-        int targetY = (int) gridPos.y;
-        
-        if (!gameGrid.isValidPosition(targetX, targetY)) {
-            System.out.println("Invalid target position: (" + targetX + ", " + targetY + ")");
+
+        Position2D targetPosition = new Position2D((int) gridPos.x, (int) gridPos.y);
+        if (gameGrid.isInvalidPosition(targetPosition)) {
+            System.out.println("Invalid target position: (" + targetPosition.getX() + ", " + targetPosition.getY() + ")");
             return;
         }
 
         // Check if target terrain is passable
-        TerrainType targetTerrain = gameGrid.getTerrainAt(targetX, targetY);
+        TerrainType targetTerrain = gameGrid.getTerrainAt(targetPosition);
         if (!targetTerrain.isPassable()) {
-            System.out.println("Cannot move to impassable terrain at (" + targetX + ", " + targetY + ")");
+            System.out.println("Cannot move to impassable terrain at (" + targetPosition.getX() + ", " + targetPosition.getY() + ")");
             return;
         }
 
         // Check if another entity is already at target position
-        Entity entityAtTarget = entityManager.getEntityAt(targetX, targetY);
+        Entity entityAtTarget = entityManager.getEntityAt(targetPosition);
         if (entityAtTarget != null && entityAtTarget != selectedEntity) {
-            System.out.println("Cannot move to occupied position: " + entityAtTarget.getType() + " at (" + targetX + ", " + targetY + ")");
+            System.out.println("Cannot move to occupied position: " + entityAtTarget.getType() + " at (" + targetPosition.getX() + ", " + targetPosition.getY() + ")");
             return;
         }
 
         FuelComponent fuel = selectedEntity.getComponent(FuelComponent.class);
         if (fuel != null) {
-            int distance = Math.abs(targetX - selectedEntity.getGridX()) + Math.abs(targetY - selectedEntity.getGridY());
+            int distance = Math.abs(targetPosition.getX() - selectedEntity.getPosition().getX()) + Math.abs(targetPosition.getY() - selectedEntity.getPosition().getY());
             int fuelCost = fuel.calculateMovementCost(distance);
 
             if (!fuel.hasFuel(fuelCost)) {
@@ -115,10 +115,10 @@ public class InputHandler extends InputAdapter implements Observable {
             }
 
             MovementComponent movement = selectedEntity.getComponent(MovementComponent.class);
-            boolean moveSuccessful = movement.move(selectedEntity, targetX, targetY, gameGrid);
+            boolean moveSuccessful = movement.move(selectedEntity, targetPosition, gameGrid);
 
             if (moveSuccessful) {
-                System.out.println("Moved " + selectedEntity.getName() + " to (" + targetX + ", " + targetY + "), fuel used: " + fuelCost + ", fuel remaining: " + fuel.getCurrentFuel() + ".");
+                System.out.println("Moved " + selectedEntity.getName() + " to (" + targetPosition.getX() + ", " + targetPosition.getY() + "), fuel used: " + fuelCost + ", fuel remaining: " + fuel.getCurrentFuel() + ".");
                 fuelSystem.transferIfPossibleFrom(selectedEntity);
             } else {
                 // TODO: add reasons for not being able to move.
@@ -133,17 +133,16 @@ public class InputHandler extends InputAdapter implements Observable {
         
         // Convert world coordinates to grid coordinates
         Vector2 gridPos = gameGrid.worldToGrid(mouseWorldPos.x, mouseWorldPos.y);
-        int gridX = (int) gridPos.x;
-        int gridY = (int) gridPos.y;
+        Position2D mousePositionGrid = new Position2D((int) gridPos.x, (int) gridPos.y);
         
         // Check if coordinates are within grid bounds
-        if (!gameGrid.isValidPosition(gridX, gridY)) {
+        if (gameGrid.isInvalidPosition(mousePositionGrid)) {
             selectedEntity = null;
             return;
         }
         
         // Look for entity at clicked position
-        Entity clickedEntity = entityManager.getEntityAt(gridX, gridY);
+        Entity clickedEntity = entityManager.getEntityAt(mousePositionGrid);
         updateEntityChangeListeners(clickedEntity);
     }
 

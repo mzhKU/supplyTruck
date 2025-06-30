@@ -1,6 +1,7 @@
 package ch.mzh.game;
 
 import ch.mzh.components.*;
+import ch.mzh.infrastructure.Position2D;
 import ch.mzh.model.SupplyTruck;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -57,14 +58,14 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     
     private void setupInitialEntities() {
         // Create home base at bottom-left area
-        Entity homeBase = new Entity("Base 1", EntityType.BASE, 10, 10);
+        Entity homeBase = new Entity("Base 1", EntityType.BASE, new Position2D(10, 10));
         entityManager.addEntity(homeBase);
         
         // Create cannon near base
         Component cannonMovement = new MovementComponent();
         Component cannonFuel = new FuelComponent(50, 2);
 
-        Entity cannon = new Cannon("Cannon 1", EntityType.CANNON, 15, 15);
+        Entity cannon = new Cannon("Cannon 1", EntityType.CANNON, new Position2D(15, 15));
         cannon.addComponent(cannonMovement);
         cannon.addComponent(cannonFuel);
         entityManager.addEntity(cannon);
@@ -72,7 +73,7 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         // Create some troops
         Component troopMovement = new MovementComponent();
         for (int i = 0; i < 5; i++) {
-            Entity troop = new Entity("Troop " + i, EntityType.TROOP, 12 + i, 12);
+            Entity troop = new Entity("Troop " + i, EntityType.TROOP, new Position2D(12 + i, 12));
             troop.addComponent(troopMovement);
             entityManager.addEntity(troop);
         }
@@ -82,7 +83,7 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         Component truckFuel = new FuelComponent(100, 1);
         Component truckSupply = new SupplyComponent(200, 1);
 
-        Entity supplyTruck = new SupplyTruck("Supply Truck 1", SUPPLY_TRUCK, 8, 8);
+        Entity supplyTruck = new SupplyTruck("Supply Truck 1", SUPPLY_TRUCK, new Position2D(8, 8));
         supplyTruck.addComponent(truckMovement);
         supplyTruck.addComponent(truckFuel);
         supplyTruck.addComponent(truckSupply);
@@ -155,7 +156,7 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     private void renderDebugInfo() {}
     
     private void printSelectionInfo(Entity selectedEntity) {
-        System.out.println("Selected: " + selectedEntity.getType() + " at (" + selectedEntity.getGridX() + ", " + selectedEntity.getGridY() + ")");
+        System.out.println("Selected: " + selectedEntity.getType() + " at (" + selectedEntity.getPosition().getX() + ", " + selectedEntity.getPosition().getY() + ")");
     }
 
     private void printDeselectionInfo() {

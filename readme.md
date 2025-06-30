@@ -1,4 +1,14 @@
+Ongoing:
+- Position2D instead of X, Y
+
 Todo:
+- Refuel should also happen when cannon moves next to supply truck
+- Highlight hovered grid unit
+- Render name of unit on unit
+- Refuel supply truck at base
+- Refuel cannon at base
+- Drop fuel depots on grid
+- Deploy solar panels if supply truck or cannon run out of fuel
 - Show maximum travel range such that return to base is possible with three risk levels, safe, medium, risky
 - Show current fuel on unit
 - Fuel consumption depends on vehicle weight

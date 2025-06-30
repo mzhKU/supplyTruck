@@ -47,13 +47,13 @@ public class GameGrid {
         }
     }
     
-    public boolean isValidPosition(int x, int y) {
-        return x >= 0 && x < width && y >= 0 && y < height;
+    public boolean isInvalidPosition(Position2D position) {
+        return position.getX() < 0 || position.getX() >= width || position.getY() < 0 || position.getY() >= height;
     }
     
-    public TerrainType getTerrainAt(int x, int y) {
-        if (!isValidPosition(x, y)) return TerrainType.OBSTACLE;
-        return terrain[x][y];
+    public TerrainType getTerrainAt(Position2D position) {
+        if (isInvalidPosition(position)) return TerrainType.OBSTACLE;
+        return terrain[position.getX()][position.getY()];
     }
     
     public Vector2 gridToWorld(int gridX, int gridY) {

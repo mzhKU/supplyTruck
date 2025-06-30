@@ -41,11 +41,11 @@ public class EntityManager {
         return result;
     }
     
-    public Entity getEntityAt(int gridX, int gridY) {
+    public Entity getEntityAt(Position2D position) {
         for (Entity entity : entities) {
             if (entity.isActive() && entity.isSelectable() &&
-                entity.getGridX() == gridX && 
-                entity.getGridY() == gridY) {
+                entity.getPosition().getX() == position.getX() &&
+                entity.getPosition().getY() == position.getY()) {
                 return entity;
             }
         }
@@ -62,11 +62,35 @@ public class EntityManager {
         return result;
     }
 
-    public List<Entity> getEntitiesInRange(int supplierX, int supplierY, int transferRange, Entity excludeSelf) {
+
+    /*
+    public List<Entity> getSupplyEntitiesAroundSelectedEntity(int selectedX, int selectedY, Entity excludeSelf) {
+        Array<Entity> allEntities = getEntities();
+
+        for (int dx = -1; dx <= 1; dx++) {
+            for (int dy = -1; dy <= 1; dy++) {
+
+                if (dx == 0 && dy == 0) continue;
+
+                int newX = selectedX  + dx;
+                int newY = selectedY + dy;
+
+                // Check if the new position is within grid bounds
+                if (!isInvalidPosition(newX, newY, gridWidth, gridHeight)) {
+                    neighbors.add(new Position2D(newX, newY));
+                }
+            }
+        }
+
+        return List.of();
+    }
+    */
+
+    public List<Entity> getEntitiesInRange(Position2D supplierPosition, int transferRange, Entity excludeSelf) {
         List<Entity> entitiesInRange = new ArrayList<>();
         for (Entity entity : entities) {
             if (entity == excludeSelf) continue;
-            int distance = calculateManhattanDistance(supplierX, supplierY, entity.getGridX(), entity.getGridY());
+            int distance = calculateManhattanDistance(supplierPosition, entity.getPosition());
             if (distance <= transferRange) {
                 entitiesInRange.add(entity);
             }
@@ -74,8 +98,8 @@ public class EntityManager {
         return entitiesInRange;
     }
 
-    public List<Entity> getRefuelableEntitiesInRange(int supplierX, int supplierY, int range, Entity excludeSelf) {
-        return getEntitiesInRange(supplierX, supplierY, range, excludeSelf).stream()
+    public List<Entity> getRefuelableEntitiesInRange(Position2D supplierPosition, int range, Entity excludeSelf) {
+        return getEntitiesInRange(supplierPosition, range, excludeSelf).stream()
                 .filter(entity -> {
                     FuelComponent fuel = entity.getComponent(FuelComponent.class);
                     return fuel != null && !fuel.isFull();
@@ -83,7 +107,7 @@ public class EntityManager {
                 .collect(toList());
     }
 
-    private int calculateManhattanDistance(int supplierX, int supplierY, int targetX, int targetY) {
-        return Math.abs(supplierX - targetX) + Math.abs(supplierY - targetY);
+    private int calculateManhattanDistance(Position2D supplierPosition, Position2D targetPosition) {
+        return Math.abs(supplierPosition.getX() - targetPosition.getX()) + Math.abs(supplierPosition.getY() - targetPosition.getY());
     }
 }
