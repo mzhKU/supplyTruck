@@ -5,6 +5,7 @@ public class FuelComponent implements Component {
     private int currentFuel;
     private int maxFuel;
     private int fuelConsumptionRate;
+    private int lastFuelUsage = 0;
 
     public FuelComponent(int maxFuel, int fuelConsumptionRate) {
         this.maxFuel = maxFuel;
@@ -39,6 +40,7 @@ public class FuelComponent implements Component {
     public int consumeFuel(int amount) {
         if (hasFuel(amount)) {
             currentFuel -= amount;
+            lastFuelUsage = amount;
         }
         return amount;
     }
@@ -55,8 +57,6 @@ public class FuelComponent implements Component {
         return hasFuel(calculateMovementCost(distance));
     }
 
-    public void refuelToFull() {
-        currentFuel = maxFuel;
-    }
+    public int getLastFuelUsage() { return lastFuelUsage; }
 
 }

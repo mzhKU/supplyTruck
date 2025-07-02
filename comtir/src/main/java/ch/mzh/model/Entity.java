@@ -1,12 +1,10 @@
 package ch.mzh.model;
 
 import ch.mzh.components.Component;
-import ch.mzh.components.MovementComponent;
 import ch.mzh.infrastructure.Position2D;
 import com.badlogic.gdx.math.Vector2;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class Entity {
@@ -56,7 +54,6 @@ public class Entity {
     }
 
     private void updateWorldPosition() {
-        // This will be updated when we have access to the grid, for now, assume 32px tiles
         worldPosition.set(position.getX() * 32, position.getY() * 32);
     }
     

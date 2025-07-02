@@ -1,8 +1,13 @@
 Ongoing:
-- Position2D instead of X, Y
+- Refuel should also happen when cannon moves next to supply truck
 
 Todo:
-- Refuel should also happen when cannon moves next to supply truck
+- API for agent control
+- Fuel level max limit -> cannot overfuel.
+- Decouple MovementComponent from FuelComponent, maybe introduce a FuelMovementComponent
+- Troops dont have fuel but they can move
+- Integration test
+- Clarify distinction between supply truck fuel and supply truck refuel supply
 - Highlight hovered grid unit
 - Render name of unit on unit
 - Refuel supply truck at base
@@ -20,6 +25,9 @@ Todo:
 - Express fuel / distance capacity as ratios between vehicles
 - Log the travel and the fuel cost
 - Avoid duplicate calculation of fuel cost
+- Handle case when cannon next to truck and base
+- Supply truck refuels other supply truck?
+- Cannon supplies grenades to other cannon?
 
 Player control
 - Vehicle class which can move, consumes fuel
@@ -29,6 +37,9 @@ Player control
 Non player controlled:
 - Rough terrain
 - Blocked terrain
+
+EntityManager:
+- Get neighbours of position
 
 
 Supply vehicle:
@@ -40,3 +51,4 @@ Supply vehicle:
 
 Done:
 - Observer pattern for change detection
+- Position2D instead of X, Y

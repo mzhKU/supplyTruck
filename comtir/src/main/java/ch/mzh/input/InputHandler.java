@@ -1,7 +1,6 @@
 package ch.mzh.input;
 
 import ch.mzh.components.FuelComponent;
-import ch.mzh.components.FuelSystem;
 import ch.mzh.components.MovementComponent;
 import ch.mzh.game.Observer;
 
@@ -26,8 +25,6 @@ public class InputHandler extends InputAdapter implements Observable {
     private EntityManager entityManager;
     private Entity selectedEntity;
     private Vector3 mouseWorldPos;
-    private FuelSystem fuelSystem;
-
     private final List<Observer> observers = new ArrayList<>();
     
     public InputHandler(OrthographicCamera camera, GameGrid gameGrid, EntityManager entityManager) {
@@ -35,7 +32,6 @@ public class InputHandler extends InputAdapter implements Observable {
         this.gameGrid = gameGrid;
         this.entityManager = entityManager;
         this.mouseWorldPos = new Vector3();
-        this.fuelSystem = new FuelSystem(entityManager);
     }
 
     @Override
@@ -60,7 +56,7 @@ public class InputHandler extends InputAdapter implements Observable {
     @Override
     public void addObserver(Observer observer) {
         System.out.println("Adding observer: " + observer);
-        this.observers.add(observer);
+        observers.add(observer);
     }
 
     @Override
@@ -73,88 +69,75 @@ public class InputHandler extends InputAdapter implements Observable {
     }
 
     private void handleMovementCommandOfSelectedEntity(int screenX, int screenY) {
-        if (!selectedEntity.hasComponent(MovementComponent.class)) {
-            System.out.println("This entity cannot move: " + selectedEntity.getName());
-            return;
-        }
+        if (isImmobile(selectedEntity)) return;
 
-        // Convert screen coordinates to world coordinates
         convertScreenToWorldCoordinates(screenX, screenY);
-        
-        // Convert world coordinates to grid coordinates
         Vector2 gridPos = gameGrid.worldToGrid(mouseWorldPos.x, mouseWorldPos.y);
-
         Position2D targetPosition = new Position2D((int) gridPos.x, (int) gridPos.y);
         if (gameGrid.isInvalidPosition(targetPosition)) {
             System.out.println("Invalid target position: (" + targetPosition.getX() + ", " + targetPosition.getY() + ")");
             return;
         }
 
-        // Check if target terrain is passable
+        /*
         TerrainType targetTerrain = gameGrid.getTerrainAt(targetPosition);
         if (!targetTerrain.isPassable()) {
             System.out.println("Cannot move to impassable terrain at (" + targetPosition.getX() + ", " + targetPosition.getY() + ")");
             return;
         }
+        */
 
-        // Check if another entity is already at target position
         Entity entityAtTarget = entityManager.getEntityAt(targetPosition);
         if (entityAtTarget != null && entityAtTarget != selectedEntity) {
             System.out.println("Cannot move to occupied position: " + entityAtTarget.getType() + " at (" + targetPosition.getX() + ", " + targetPosition.getY() + ")");
             return;
         }
 
-        FuelComponent fuel = selectedEntity.getComponent(FuelComponent.class);
-        if (fuel != null) {
-            int distance = Math.abs(targetPosition.getX() - selectedEntity.getPosition().getX()) + Math.abs(targetPosition.getY() - selectedEntity.getPosition().getY());
-            int fuelCost = fuel.calculateMovementCost(distance);
+        MovementComponent movement = selectedEntity.getComponent(MovementComponent.class);
+        boolean moved = movement.move(selectedEntity, targetPosition);
 
-            if (!fuel.hasFuel(fuelCost)) {
-                System.out.println("Not enough fuel. Has: " + fuel.getCurrentFuel() + ", Needs: " + fuelCost);
-                return;
-            }
-
-            MovementComponent movement = selectedEntity.getComponent(MovementComponent.class);
-            boolean moveSuccessful = movement.move(selectedEntity, targetPosition, gameGrid);
-
-            if (moveSuccessful) {
-                System.out.println("Moved " + selectedEntity.getName() + " to (" + targetPosition.getX() + ", " + targetPosition.getY() + "), fuel used: " + fuelCost + ", fuel remaining: " + fuel.getCurrentFuel() + ".");
-                fuelSystem.transferIfPossibleFrom(selectedEntity);
-            } else {
-                // TODO: add reasons for not being able to move.
-                System.out.println("Could not move.");
-            }
+        if (moved) {
+            printMovement(selectedEntity, targetPosition);
+            observers.stream().forEach(o -> o.onEntityMoved(selectedEntity));
+        }
+        else {
+            System.out.println("Could not move."); // TODO: add reasons for not being able to move.
         }
     }
 
+    private int getDistance(Position2D targetPosition, Position2D startingPosition) {
+        return Math.abs(targetPosition.getX() - startingPosition.getX()) + Math.abs(targetPosition.getY() - startingPosition.getY());
+    }
+
+    private boolean isImmobile(Entity selectedEntity) {
+        if (!selectedEntity.hasComponent(MovementComponent.class))      {
+            System.out.println("This entity cannot move: " + selectedEntity.getName());
+            return true;
+        }
+        return false;
+    }
+
     private void handleEntitySelection(int screenX, int screenY) {
-        // Convert screen coordinates to world coordinates
         convertScreenToWorldCoordinates(screenX, screenY);
-        
-        // Convert world coordinates to grid coordinates
         Vector2 gridPos = gameGrid.worldToGrid(mouseWorldPos.x, mouseWorldPos.y);
         Position2D mousePositionGrid = new Position2D((int) gridPos.x, (int) gridPos.y);
-        
-        // Check if coordinates are within grid bounds
+
         if (gameGrid.isInvalidPosition(mousePositionGrid)) {
             selectedEntity = null;
             return;
         }
-        
-        // Look for entity at clicked position
+
         Entity clickedEntity = entityManager.getEntityAt(mousePositionGrid);
         updateEntityChangeListeners(clickedEntity);
     }
 
     private void updateEntityChangeListeners(Entity entity) {
         if (entity != null) {
-            // Select the clicked entity
-            if (entity != this.selectedEntity) {
-                this.selectedEntity = entity;
-                observers.stream().forEach(o -> o.onEntitySelected(this.selectedEntity));
+            if (entity != selectedEntity) {
+                selectedEntity = entity;
+                observers.stream().forEach(o -> o.onEntitySelected(selectedEntity));
             }
         } else {
-            // Deselect if clicking on empty space
             selectedEntity = null;
             observers.stream().forEach(Observer::onEntityDeselected);
         }
@@ -163,6 +146,11 @@ public class InputHandler extends InputAdapter implements Observable {
     private void convertScreenToWorldCoordinates(int screenX, int screenY) {
         mouseWorldPos.set(screenX, screenY, 0);
         camera.unproject(mouseWorldPos);
+    }
+
+    private void printMovement(Entity selectedEntity, Position2D targetPosition) {
+        FuelComponent fuel = selectedEntity.getComponent(FuelComponent.class);
+        System.out.println("Moved " + selectedEntity.getName() + " to (" + targetPosition.getX() + ", " + targetPosition.getY() + "), fuel used: " + fuel.getLastFuelUsage() + ", fuel remaining: " + fuel.getCurrentFuel() + ".");
     }
 
     public void dispose() {

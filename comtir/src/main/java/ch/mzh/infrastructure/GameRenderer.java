@@ -5,12 +5,10 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Array;
 
-import ch.mzh.game.Observer;
-import ch.mzh.input.InputHandler;
 import ch.mzh.model.Entity;
 import ch.mzh.model.TerrainType;
 
-public class GameRenderer implements Observer {
+public class GameRenderer {
     private ShapeRenderer shapeRenderer;
     private OrthographicCamera camera;
     private GameGrid gameGrid;
@@ -183,17 +181,5 @@ public class GameRenderer implements Observer {
         shapeRenderer.line(worldPos.x + tileSize, worldPos.y, worldPos.x + tileSize, worldPos.y + cornerSize);
         
         shapeRenderer.end();
-    }
-
-    @Override
-    public void onEntitySelected(Entity entity) {
-        // Store the selected entity to render the selection indicator in the next frame
-        System.out.println("Entity selected for rendering: " + entity.getType());
-    }
-
-    @Override
-    public void onEntityDeselected() {
-        // Clear the selected entity so the selection indicator disappears
-        System.out.println("Entity deselected");
     }
 }

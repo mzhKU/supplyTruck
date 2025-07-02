@@ -14,39 +14,23 @@ public class SupplyComponent implements Component {
     }
 
     public boolean canRefuel(Entity supplier, Entity target) {
-
-        SupplyComponent supply = supplier.getComponent(SupplyComponent.class);
-        if (supply == null) {
-            return false;
-        }
-
         FuelComponent fuel = supplier.getComponent(FuelComponent.class);
-        if (fuel.isEmpty()) {
-            return false;
-        }
-
-        // Check if target needs fuel
         FuelComponent targetFuel = target.getComponent(FuelComponent.class);
-        if (targetFuel == null || targetFuel.isFull()) {
-            return false;
-        }
 
-        // Check range
+        if (fuel.isEmpty() || targetFuel.isFull()) return false;
+
         return isInRange(target.getPosition(), supplier.getPosition());
     }
 
     public boolean refuelTarget(Entity supplier, Entity target) {
-        if (!canRefuel(supplier, target)) {
-            return false;
-        }
 
         FuelComponent supply = supplier.getComponent(FuelComponent.class);
         FuelComponent targetFuel = target.getComponent(FuelComponent.class);
 
-        int transferAmount = Math.min(supply.getCurrentFuel(), targetFuel.getMaxFuel() - targetFuel.getCurrentFuel());
+        int targetFuelNeed = targetFuel.getMaxFuel() - targetFuel.getCurrentFuel();
+        int transferAmount = Math.min(supply.getCurrentFuel(), targetFuelNeed);
 
         if (transferAmount > 0) {
-            // What is consumed is transferred
             targetFuel.addFuel(supply.consumeFuel(transferAmount));
             return true;
         }

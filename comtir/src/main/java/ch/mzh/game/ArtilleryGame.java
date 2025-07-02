@@ -26,6 +26,7 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     private EntityManager entityManager;
     private GameRenderer gameRenderer;
     private InputHandler inputHandler;
+    private FuelSystem fuelSystem;
     
     // Camera movement
     private static final float CAMERA_SPEED = 600f;
@@ -50,7 +51,6 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         Gdx.input.setInputProcessor(inputHandler);
         
         inputHandler.addObserver(this);
-        inputHandler.addObserver(gameRenderer);
         
         // Create initial entities for testing
         setupInitialEntities();
@@ -88,6 +88,8 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         supplyTruck.addComponent(truckFuel);
         supplyTruck.addComponent(truckSupply);
         entityManager.addEntity(supplyTruck);
+
+        fuelSystem = new FuelSystem(entityManager);
     }
     
     @Override
@@ -106,6 +108,14 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         gameRenderer.render(entityManager.getEntities(), inputHandler.getSelectedEntity());
         
         renderDebugInfo();
+    }
+
+    public void onEntityMoved(Entity movedEntity) {
+        boolean transferred = fuelSystem.handleEntityMovement(movedEntity);
+
+        if (transferred) {
+            System.out.println("Fuel transferred.");
+        }
     }
 
     @Override
@@ -166,7 +176,6 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     @Override
     public void dispose() {
         inputHandler.removeObserver(this);
-        inputHandler.removeObserver(gameRenderer);
         inputHandler.dispose();
     }
 }
