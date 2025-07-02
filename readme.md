@@ -2,6 +2,7 @@ Ongoing:
 - Refuel should also happen when cannon moves next to supply truck
 
 Todo:
+- Add a data header
 - API for agent control
 - Fuel level max limit -> cannot overfuel.
 - Decouple MovementComponent from FuelComponent, maybe introduce a FuelMovementComponent
@@ -28,6 +29,8 @@ Todo:
 - Handle case when cannon next to truck and base
 - Supply truck refuels other supply truck?
 - Cannon supplies grenades to other cannon?
+- Vehicles have orientation, need to be correctly aligned for refueling
+- Refuel also over diagonal
 
 Player control
 - Vehicle class which can move, consumes fuel

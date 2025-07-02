@@ -3,6 +3,8 @@ package ch.mzh.game;
 import ch.mzh.components.*;
 import ch.mzh.infrastructure.Position2D;
 import ch.mzh.model.SupplyTruck;
+import ch.mzh.movement.MovementStrategy;
+import ch.mzh.movement.MovementStrategyFactory;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -111,7 +113,8 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     }
 
     public void onEntityMoved(Entity movedEntity) {
-        boolean transferred = fuelSystem.handleEntityMovement(movedEntity);
+        MovementStrategy strategy = MovementStrategyFactory.getStrategy(movedEntity);
+        boolean transferred = strategy.handleMovement(movedEntity, fuelSystem);
 
         if (transferred) {
             System.out.println("Fuel transferred.");
