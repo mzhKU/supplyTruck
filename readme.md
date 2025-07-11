@@ -1,7 +1,12 @@
 Ongoing:
-- Refuel should also happen when cannon moves next to supply truck
+- Refuel when cannon moves next to base
 
 Todo:
+- What if a cannon moves inbetween a base and a supply truck?
+- On start, initialize a map with distances between all positions (must have zeroes on diagonal) to remove
+  distance calculation
+- First version: enemy shots are indicated on the grid the user has to evade units from being hit
+- Add map to entity manager to fetch entities by name or id
 - Add a data header
 - API for agent control
 - Fuel level max limit -> cannot overfuel.
@@ -55,3 +60,4 @@ Supply vehicle:
 Done:
 - Observer pattern for change detection
 - Position2D instead of X, Y
+- Refuel should also happen when cannon moves next to supply truck

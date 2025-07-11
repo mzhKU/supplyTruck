@@ -71,17 +71,15 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         cannon.addComponent(cannonMovement);
         cannon.addComponent(cannonFuel);
         entityManager.addEntity(cannon);
-        
-        // Create some troops
-        Component troopMovement = new MovementComponent();
+
+        Component troopMovement = new TroopMovementComponent();
         for (int i = 0; i < 5; i++) {
             Entity troop = new Entity("Troop " + i, EntityType.TROOP, new Position2D(12 + i, 12));
             troop.addComponent(troopMovement);
             entityManager.addEntity(troop);
         }
-        
-        // Create a supply truck
-        Component truckMovement = new MovementComponent();
+
+        Component truckMovement = new VehicleMovementComponent();
         Component truckFuel = new FuelComponent(100, 1);
         Component truckSupply = new SupplyComponent(200, 1);
 

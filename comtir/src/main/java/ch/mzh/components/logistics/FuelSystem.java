@@ -1,4 +1,4 @@
-package ch.mzh.components;
+package ch.mzh.components.logistics;
 
 import ch.mzh.infrastructure.EntityManager;
 import ch.mzh.model.Entity;
@@ -44,7 +44,7 @@ public class FuelSystem {
 
     // Entity requests refuel from nearby supply trucks
     public boolean requestRefuelFromNearbySuppliers(Entity receiver) {
-        if (receiver.hasComponent(SupplyComponent.class)) return false; // Supply trucks don't request refuel
+        if (receiver.hasComponent(SupplyComponent.class)) return false; // TODO: Supply trucks refuel at the base
 
         List<Entity> suppliers = entityManager.getEntitiesInRange(receiver, 1).stream() // Use standard range or make configurable
                 .filter(e -> e.hasComponent(SupplyComponent.class))

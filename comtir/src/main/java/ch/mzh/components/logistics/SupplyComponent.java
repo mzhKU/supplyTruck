@@ -1,12 +1,17 @@
-package ch.mzh.components;
+package ch.mzh.components.logistics;
 
+import ch.mzh.components.Component;
 import ch.mzh.infrastructure.Position2D;
 import ch.mzh.model.Entity;
+
+import static ch.mzh.utilities.Distance.calculateManhattanDistance;
 
 public class SupplyComponent implements Component {
 
     private int fuelSupplyCapacity;
     private int refuelRange;
+
+    public SupplyComponent() {}
 
     public SupplyComponent(int fuelSupplyCapacity, int refuelRange) {
         this.fuelSupplyCapacity = fuelSupplyCapacity;
@@ -39,8 +44,8 @@ public class SupplyComponent implements Component {
 
     public int getFuelSupplyCapacity() { return fuelSupplyCapacity; }
     public int getRefuelRange() { return refuelRange; }
-    private boolean isInRange(Position2D targetPosition, Position2D sourcePosition) {
-        int distance = Math.abs(targetPosition.getX() - sourcePosition.getX()) + Math.abs(targetPosition.getY() - sourcePosition.getY());
+    protected boolean isInRange(Position2D targetPosition, Position2D sourcePosition) {
+        int distance = calculateManhattanDistance(targetPosition, sourcePosition);
         return distance <= refuelRange;
     }
 }

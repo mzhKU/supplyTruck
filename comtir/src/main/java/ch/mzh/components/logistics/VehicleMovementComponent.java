@@ -1,11 +1,12 @@
-package ch.mzh.components;
+package ch.mzh.components.logistics;
 
+import ch.mzh.components.Component;
 import ch.mzh.infrastructure.Position2D;
 import ch.mzh.model.Entity;
 
-public class MovementComponent implements Component {
+public class VehicleMovementComponent implements Component {
 
-    public MovementComponent() {
+    public VehicleMovementComponent() {
     }
 
     public boolean move(Entity selectedEntity, Position2D targetPosition) {

@@ -7,6 +7,8 @@ import ch.mzh.model.Entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import static ch.mzh.utilities.Distance.calculateManhattanDistance;
+
 public class EntityManager {
     private Array<Entity> entities;
     
@@ -47,9 +49,5 @@ public class EntityManager {
             }
         }
         return entitiesInRange;
-    }
-
-    private int calculateManhattanDistance(Position2D supplierPosition, Position2D targetPosition) {
-        return Math.abs(supplierPosition.getX() - targetPosition.getX()) + Math.abs(supplierPosition.getY() - targetPosition.getY());
     }
 }

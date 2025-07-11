@@ -1,7 +1,7 @@
 package ch.mzh.input;
 
-import ch.mzh.components.FuelComponent;
-import ch.mzh.components.MovementComponent;
+import ch.mzh.components.logistics.FuelComponent;
+import ch.mzh.components.logistics.VehicleMovementComponent;
 import ch.mzh.game.Observer;
 
 import java.util.ArrayList;
@@ -93,7 +93,7 @@ public class InputHandler extends InputAdapter implements Observable {
             return;
         }
 
-        MovementComponent movement = selectedEntity.getComponent(MovementComponent.class);
+        VehicleMovementComponent movement = selectedEntity.getComponent(VehicleMovementComponent.class);
         boolean moved = movement.move(selectedEntity, targetPosition);
 
         if (moved) {
@@ -110,7 +110,7 @@ public class InputHandler extends InputAdapter implements Observable {
     }
 
     private boolean isImmobile(Entity selectedEntity) {
-        if (!selectedEntity.hasComponent(MovementComponent.class))      {
+        if (!selectedEntity.hasComponent(VehicleMovementComponent.class))      {
             System.out.println("This entity cannot move: " + selectedEntity.getName());
             return true;
         }

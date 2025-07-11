@@ -1,4 +1,6 @@
-package ch.mzh.components;
+package ch.mzh.components.logistics;
+
+import ch.mzh.components.Component;
 
 public class FuelComponent implements Component {
 
