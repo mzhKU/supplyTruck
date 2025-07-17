@@ -105,10 +105,6 @@ public class InputHandler extends InputAdapter implements Observable {
         }
     }
 
-    private int getDistance(Position2D targetPosition, Position2D startingPosition) {
-        return Math.abs(targetPosition.getX() - startingPosition.getX()) + Math.abs(targetPosition.getY() - startingPosition.getY());
-    }
-
     private boolean isImmobile(Entity selectedEntity) {
         if (!selectedEntity.hasComponent(VehicleMovementComponent.class))      {
             System.out.println("This entity cannot move: " + selectedEntity.getName());

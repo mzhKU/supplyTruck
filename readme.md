@@ -1,13 +1,13 @@
 
 
 Refuel use cases:
-1. Cannon moves next to supply truck            -> truck refuels cannon
-2. Cannon moves next to base                    -> base refuels cannon
-3. Supply truck moves next to cannon            -> truck refuels cannon
-4. Supply truck moves next to base              -> base refuels truck
-5. Cannon moves inbetween base and supply truck -> base refuels cannon
-6. Supply truck moves inbetween cannon and base -> base refuels truck, truck refules cannon
-
+1. Cannon moves next to supply truck             -> truck refuels cannon
+2. Vehicle moves next to base                    -> base refuels vehicle
+3. Supply truck moves next to cannon             -> truck refuels cannon
+4. Cannon moves inbetween base and supply truck  -> base refuels cannon
+5. Supply truck moves inbetween cannon and base  -> base refuels truck, truck refules cannon
+6. Cannon moves not next to truck or base        -> no refueling
+7. Supply truck moves not next to cannon or base -> no refueling
 
 Ongoing:
 - Refuel when cannon moves next to base

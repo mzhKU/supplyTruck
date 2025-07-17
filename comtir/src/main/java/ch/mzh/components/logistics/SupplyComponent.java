@@ -3,69 +3,79 @@ package ch.mzh.components.logistics;
 import ch.mzh.components.Component;
 import ch.mzh.infrastructure.Position2D;
 import ch.mzh.model.Entity;
+import ch.mzh.model.EntityType;
 
 import static ch.mzh.utilities.Distance.calculateManhattanDistance;
 
 public class SupplyComponent implements Component {
 
-    private int fuelSupplyCapacity;
     private int refuelRange;
-    private BaseSupplyComponent baseSupplyComponent;
 
-    public SupplyComponent() {
-
-    }
-
-    public SupplyComponent(BaseSupplyComponent baseSupplyComponent) {
-        this.baseSupplyComponent = baseSupplyComponent;
-    }
-
-    public SupplyComponent(int fuelSupplyCapacity, int refuelRange) {
-        this.fuelSupplyCapacity = fuelSupplyCapacity;
+    public SupplyComponent(int refuelRange) {
         this.refuelRange = refuelRange;
     }
 
     public boolean canRefuel(Entity supplier, Entity target) {
-        FuelComponent supply = supplier.getComponent(FuelComponent.class);
         FuelComponent targetFuel = target.getComponent(FuelComponent.class);
 
-        if (supply.isEmpty() || targetFuel.isFull()) return false;
+        if (targetFuel == null || targetFuel.isFull()) {
+            return false;
+        }
+        if (!hasAvailableFuel(supplier)) {
+            return false;
+        }
 
         return isInRange(target.getPosition(), supplier.getPosition());
     }
 
     public boolean refuelTarget(Entity supplier, Entity target) {
-        if (baseSupplyComponent != null) {
-            baseSupplyComponent.refuelTarget(supplier, target);
-            return true;
-        }
-        FuelComponent supplyFuel = supplier.getComponent(FuelComponent.class);
         FuelComponent targetFuel = target.getComponent(FuelComponent.class);
 
-        int targetFuelNeed = targetFuel.getMaxFuel() - targetFuel.getCurrentFuel();
-        int transferAmount = Math.min(supplyFuel.getCurrentFuel(), targetFuelNeed);
-
-        // TODO: This condition should emerge by itself from
-        // 1: the FuelComponent logic where the currently available fuel
-        //    is calculated, it should never drop below zero.
-        // 2: The invariant that current fuel cannot be larger than maximal
-        //    available fuel.
-        if (transferAmount > 0) {
-            targetFuel.addFuel(supplyFuel.consumeFuel(transferAmount));
-            return true;
+        if (targetFuel == null) {
+            return false;
         }
-        return false;
+
+        int targetFuelNeed = targetFuel.getMaxFuel() - targetFuel.getCurrentFuel();
+
+        if (targetFuelNeed <= 0) {
+            return false; // Target is already full
+        }
+
+        int transferAmount;
+
+        if (supplier.getType() == EntityType.BASE) {
+            transferAmount = targetFuelNeed;
+            targetFuel.addFuel(transferAmount);
+        } else {
+            FuelComponent supplyFuel = supplier.getComponent(FuelComponent.class);
+            if (supplyFuel == null) {
+                return false;
+            }
+
+            transferAmount = Math.min(supplyFuel.getCurrentFuel(), targetFuelNeed);
+
+            // TODO: This condition should emerge by itself from
+            // 1: the FuelComponent logic where the currently available fuel
+            //    is calculated, it should never drop below zero.
+            // 2: The invariant that current fuel cannot be larger than maximal
+            //    available fuel.
+            if (transferAmount > 0) {
+                targetFuel.addFuel(supplyFuel.consumeFuel(transferAmount));
+            }
+        }
+        return transferAmount > 0;
     }
 
-    public int getFuelSupplyCapacity() {
-        return fuelSupplyCapacity;
+    private boolean hasAvailableFuel(Entity supplier) {
+        if (supplier.getType() == EntityType.BASE) {
+            return true; // Base always has fuel available
+        }
+
+        FuelComponent supply = supplier.getComponent(FuelComponent.class);
+        return supply != null && !supply.isEmpty();
     }
 
-    public int getRefuelRange() {
-        return refuelRange;
-    }
-
-    protected boolean isInRange(Position2D targetPosition, Position2D sourcePosition) {
+    private boolean isInRange(Position2D targetPosition, Position2D sourcePosition) {
         int distance = calculateManhattanDistance(targetPosition, sourcePosition);
         return distance <= refuelRange;
     }

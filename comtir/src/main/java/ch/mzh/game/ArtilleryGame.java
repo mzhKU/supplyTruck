@@ -4,8 +4,6 @@ import ch.mzh.components.*;
 import ch.mzh.components.logistics.*;
 import ch.mzh.infrastructure.Position2D;
 import ch.mzh.model.*;
-import ch.mzh.movement.InteractionStrategy;
-import ch.mzh.movement.InteractionStrategyFactory;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -29,6 +27,7 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     private GameRenderer gameRenderer;
     private InputHandler inputHandler;
     private FuelSystem fuelSystem;
+    private SupplyRuleEngine supplyRuleEngine;
     
     // Camera movement
     private static final float CAMERA_SPEED = 600f;
@@ -38,65 +37,20 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         
     @Override
     public void create() {
-        // Initialize camera
-        camera = new OrthographicCamera();
-        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-        camera.zoom = 1.0f;
-        
-        // Initialize game systems
-        gameGrid = new GameGrid(128, 128, 32); // 128x128 grid with 32px tiles
-        entityManager = new EntityManager();
-        gameRenderer = new GameRenderer(camera, gameGrid);
-        
-        // Initialize input handling
-        inputHandler = new InputHandler(camera, gameGrid, entityManager);
-        Gdx.input.setInputProcessor(inputHandler);
-        
-        inputHandler.addObserver(this);
-        
-        // Create initial entities for testing
-        setupInitialEntities();
+        initializeCamera();
+        initializeGrid();
+        initializedEntityManager();
+        initializeGameRenderer();
+        initializeInputHandler();
+
+        createBase();
+        createSupplyTruck();
+        createCannon();
+        createTroops();
+        createFuelSystem();
+        createSupplyRuleEngine();
     }
-    
-    private void setupInitialEntities() {
 
-        Component baseSupplyComponent = new SupplyComponent(new BaseSupplyComponent());
-        Base homeBase = new Base("Base 1", EntityType.BASE, new Position2D(10, 10));
-        homeBase.addComponent(baseSupplyComponent);
-        entityManager.addEntity(homeBase);
-
-        List<BaseRefuelPosition> refuelGridPositions = gameGrid.getPositionsWithinDistance(homeBase.getPosition(), 1)
-                .stream()
-                .map(BaseRefuelPosition::new)
-                .toList();
-        gameGrid.setRefuelGridPositions(refuelGridPositions);
-
-        Component cannonMovement = new VehicleMovementComponent();
-        Component cannonFuel = new FuelComponent(50, 2);
-        Entity cannon = new Cannon("Cannon 1", EntityType.CANNON, new Position2D(15, 15));
-        cannon.addComponent(cannonMovement);
-        cannon.addComponent(cannonFuel);
-        entityManager.addEntity(cannon);
-
-        Component troopMovement = new TroopMovementComponent();
-        for (int i = 0; i < 5; i++) {
-            Entity troop = new Entity("Troop " + i, EntityType.TROOP, new Position2D(12 + i, 12));
-            troop.addComponent(troopMovement);
-            entityManager.addEntity(troop);
-        }
-
-        Component truckMovement = new VehicleMovementComponent();
-        Component truckSupply = new SupplyComponent(200, 1);
-        Component truckFuel = new FuelComponent(100, 1);
-        Entity supplyTruck = new SupplyTruck("Supply Truck 1", SUPPLY_TRUCK, new Position2D(8, 8));
-        supplyTruck.addComponent(truckMovement);
-        supplyTruck.addComponent(truckFuel);
-        supplyTruck.addComponent(truckSupply);
-        entityManager.addEntity(supplyTruck);
-
-        fuelSystem = new FuelSystem(entityManager);
-    }
-    
     @Override
     public void render() {
         float deltaTime = Gdx.graphics.getDeltaTime();
@@ -111,18 +65,6 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         
         // Render game
         gameRenderer.render(entityManager.getEntities(), inputHandler.getSelectedEntity());
-        
-        renderDebugInfo();
-    }
-
-    public void onEntityMoved(Entity movedEntity) {
-
-        InteractionStrategy strategy = InteractionStrategyFactory.getStrategy(movedEntity);
-        boolean transferred = strategy.handleInteraction(movedEntity, fuelSystem);
-
-        if (transferred) {
-            System.out.println("Fuel transferred.");
-        }
     }
 
     @Override
@@ -133,6 +75,17 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     @Override
     public void onEntityDeselected() {
         printDeselectionInfo();
+    }
+
+    @Override
+    public void dispose() {
+        inputHandler.removeObserver(this);
+        inputHandler.dispose();
+    }
+
+    @Override
+    public void onEntityMoved(Entity movedEntity) {
+        supplyRuleEngine.processMovement(movedEntity, movedEntity.getPosition());
     }
 
     private void handleKeyboardInput(float deltaTime) {
@@ -169,20 +122,76 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         camera.position.x = Math.max(halfWidth, Math.min(camera.position.x, gameGrid.getWorldWidth() - halfWidth));
         camera.position.y = Math.max(halfHeight, Math.min(camera.position.y, gameGrid.getWorldHeight() - halfHeight));
     }
-    
-    private void renderDebugInfo() {}
-    
+
+    private void initializeCamera() {
+        camera = new OrthographicCamera();
+        camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+        camera.zoom = 1.0f;
+    }
+    private void initializeGrid() {
+        gameGrid = new GameGrid(128, 128, 32); // 32px tiles
+    }
+    private void initializedEntityManager() {
+        entityManager = new EntityManager();
+    }
+    private void initializeGameRenderer() {
+        gameRenderer = new GameRenderer(camera, gameGrid);
+    }
+    private void initializeInputHandler() {
+        inputHandler = new InputHandler(camera, gameGrid, entityManager);
+        Gdx.input.setInputProcessor(inputHandler);
+        inputHandler.addObserver(this);
+    }
+
+    private void createBase() {
+        Component baseSupplyComponent = new SupplyComponent(1);
+        Base homeBase = new Base("Base 1", EntityType.BASE, new Position2D(10, 10));
+        homeBase.addComponent(baseSupplyComponent);
+        entityManager.addEntity(homeBase);
+
+        List<BaseRefuelPosition> refuelGridPositions = gameGrid.getPositionsWithinDistance(homeBase.getPosition(), 1)
+                .stream()
+                .map(BaseRefuelPosition::new)
+                .toList();
+        gameGrid.setRefuelGridPositions(refuelGridPositions);
+    }
+    private void createSupplyTruck() {
+        Component truckMovement = new VehicleMovementComponent();
+        Component truckSupply = new SupplyComponent(1);
+        Component truckFuel = new FuelComponent(100, 1);
+        Entity supplyTruck = new SupplyTruck("Supply Truck 1", SUPPLY_TRUCK, new Position2D(8, 8));
+        supplyTruck.addComponent(truckMovement);
+        supplyTruck.addComponent(truckFuel);
+        supplyTruck.addComponent(truckSupply);
+        entityManager.addEntity(supplyTruck);
+    }
+    private void createCannon() {
+        Component cannonMovement = new VehicleMovementComponent();
+        Component cannonFuel = new FuelComponent(50, 2);
+        Entity cannon = new Cannon("Cannon 1", EntityType.CANNON, new Position2D(15, 15));
+        cannon.addComponent(cannonMovement);
+        cannon.addComponent(cannonFuel);
+        entityManager.addEntity(cannon);
+    }
+    private void createTroops() {
+        Component troopMovement = new TroopMovementComponent();
+        for (int i = 0; i < 5; i++) {
+            Entity troop = new Entity("Troop " + i, EntityType.TROOP, new Position2D(12 + i, 12));
+            troop.addComponent(troopMovement);
+            entityManager.addEntity(troop);
+        }
+    }
+    private void createFuelSystem() {
+        fuelSystem = new FuelSystem();
+    }
+    private void createSupplyRuleEngine() {
+        this.supplyRuleEngine = new SupplyRuleEngine(entityManager, fuelSystem);
+    }
+
     private void printSelectionInfo(Entity selectedEntity) {
         System.out.println("Selected: " + selectedEntity.getType() + " at (" + selectedEntity.getPosition().getX() + ", " + selectedEntity.getPosition().getY() + ")");
     }
-
     private void printDeselectionInfo() {
         System.out.println("Deselected entity");
-    }
-
-    @Override
-    public void dispose() {
-        inputHandler.removeObserver(this);
-        inputHandler.dispose();
     }
 }
