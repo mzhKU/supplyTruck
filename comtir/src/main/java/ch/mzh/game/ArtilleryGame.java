@@ -1,10 +1,11 @@
 package ch.mzh.game;
 
 import ch.mzh.components.*;
+import ch.mzh.components.logistics.*;
 import ch.mzh.infrastructure.Position2D;
-import ch.mzh.model.SupplyTruck;
-import ch.mzh.movement.MovementStrategy;
-import ch.mzh.movement.MovementStrategyFactory;
+import ch.mzh.model.*;
+import ch.mzh.movement.InteractionStrategy;
+import ch.mzh.movement.InteractionStrategyFactory;
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -16,9 +17,8 @@ import ch.mzh.infrastructure.EntityManager;
 import ch.mzh.infrastructure.GameGrid;
 import ch.mzh.infrastructure.GameRenderer;
 import ch.mzh.input.InputHandler;
-import ch.mzh.model.Cannon;
-import ch.mzh.model.Entity;
-import ch.mzh.model.EntityType;
+
+import java.util.List;
 
 import static ch.mzh.model.EntityType.SUPPLY_TRUCK;
 
@@ -59,14 +59,20 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     }
     
     private void setupInitialEntities() {
-        // Create home base at bottom-left area
-        Entity homeBase = new Entity("Base 1", EntityType.BASE, new Position2D(10, 10));
-        entityManager.addEntity(homeBase);
-        
-        // Create cannon near base
-        Component cannonMovement = new MovementComponent();
-        Component cannonFuel = new FuelComponent(50, 2);
 
+        Component baseSupplyComponent = new SupplyComponent(new BaseSupplyComponent());
+        Base homeBase = new Base("Base 1", EntityType.BASE, new Position2D(10, 10));
+        homeBase.addComponent(baseSupplyComponent);
+        entityManager.addEntity(homeBase);
+
+        List<BaseRefuelPosition> refuelGridPositions = gameGrid.getPositionsWithinDistance(homeBase.getPosition(), 1)
+                .stream()
+                .map(BaseRefuelPosition::new)
+                .toList();
+        gameGrid.setRefuelGridPositions(refuelGridPositions);
+
+        Component cannonMovement = new VehicleMovementComponent();
+        Component cannonFuel = new FuelComponent(50, 2);
         Entity cannon = new Cannon("Cannon 1", EntityType.CANNON, new Position2D(15, 15));
         cannon.addComponent(cannonMovement);
         cannon.addComponent(cannonFuel);
@@ -80,9 +86,8 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         }
 
         Component truckMovement = new VehicleMovementComponent();
-        Component truckFuel = new FuelComponent(100, 1);
         Component truckSupply = new SupplyComponent(200, 1);
-
+        Component truckFuel = new FuelComponent(100, 1);
         Entity supplyTruck = new SupplyTruck("Supply Truck 1", SUPPLY_TRUCK, new Position2D(8, 8));
         supplyTruck.addComponent(truckMovement);
         supplyTruck.addComponent(truckFuel);
@@ -111,8 +116,9 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     }
 
     public void onEntityMoved(Entity movedEntity) {
-        MovementStrategy strategy = MovementStrategyFactory.getStrategy(movedEntity);
-        boolean transferred = strategy.handleMovement(movedEntity, fuelSystem);
+
+        InteractionStrategy strategy = InteractionStrategyFactory.getStrategy(movedEntity);
+        boolean transferred = strategy.handleInteraction(movedEntity, fuelSystem);
 
         if (transferred) {
             System.out.println("Fuel transferred.");
