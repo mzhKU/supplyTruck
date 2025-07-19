@@ -42,7 +42,19 @@ public class Entity {
 
     @SuppressWarnings("unchecked")
     public <T extends Component> T getComponent(Class<T> componentType) {
-        return (T) components.get(componentType);
+        // First try exact match (for performance)
+        Component component = components.get(componentType);
+        if (component != null) {
+            return (T) component;
+        }
+
+        // Then try inheritance match
+        for (Component comp : components.values()) {
+            if (componentType.isAssignableFrom(comp.getClass())) {
+                return (T) comp;
+            }
+        }
+        return null;
     }
 
     public <T extends Component> boolean hasComponent(Class<T> componentType) {

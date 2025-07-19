@@ -144,7 +144,7 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     }
 
     private void createBase() {
-        Component baseSupplyComponent = new SupplyComponent(1);
+        Component baseSupplyComponent = new BaseSupplyComponent(1);
         Base homeBase = new Base("Base 1", EntityType.BASE, new Position2D(10, 10));
         homeBase.addComponent(baseSupplyComponent);
         entityManager.addEntity(homeBase);
@@ -157,7 +157,7 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     }
     private void createSupplyTruck() {
         Component truckMovement = new VehicleMovementComponent();
-        Component truckSupply = new SupplyComponent(1);
+        Component truckSupply = new VehicleSupplyComponent(1);
         Component truckFuel = new FuelComponent(100, 1);
         Entity supplyTruck = new SupplyTruck("Supply Truck 1", SUPPLY_TRUCK, new Position2D(8, 8));
         supplyTruck.addComponent(truckMovement);
