@@ -55,8 +55,7 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
     public void render() {
         float deltaTime = Gdx.graphics.getDeltaTime();
         
-        handleKeyboardInput(deltaTime);
-                
+        calculateNewCameraPosition(deltaTime);
         camera.update();
         
         // Clear screen
@@ -88,7 +87,7 @@ public class ArtilleryGame extends ApplicationAdapter implements Observer {
         supplyRuleEngine.processMovement(movedEntity, movedEntity.getPosition());
     }
 
-    private void handleKeyboardInput(float deltaTime) {
+    private void calculateNewCameraPosition(float deltaTime) {
         // Camera movement
         Vector3 cameraMovement = new Vector3();
         

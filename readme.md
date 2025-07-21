@@ -1,16 +1,17 @@
 
+Ongoing:
+
+Tech dept:
+- Integration tests
+- Run the game without graphics
+
+
 
 Refuel use cases:
-1. Cannon moves next to supply truck             -> truck refuels cannon
-2. Vehicle moves next to base                    -> base refuels vehicle
-3. Supply truck moves next to cannon             -> truck refuels cannon
 4. Cannon moves inbetween base and supply truck  -> base refuels cannon
 5. Supply truck moves inbetween cannon and base  -> base refuels truck, truck refules cannon
 6. Cannon moves not next to truck or base        -> no refueling
 7. Supply truck moves not next to cannon or base -> no refueling
-
-Ongoing:
-- Refuel when cannon moves next to base
 
 Todo:
 - What if a cannon moves inbetween a base and a supply truck?
@@ -72,3 +73,7 @@ Done:
 - Observer pattern for change detection
 - Position2D instead of X, Y
 - Refuel should also happen when cannon moves next to supply truck
+- 19. Jul. 2025:
+  - Cannon moves next to supply truck
+  - Supply truck moves next to cannon
+  - Vehicle moves next to base
